@@ -1,0 +1,237 @@
+:root {
+    --ig-purple: #8b5cf6;
+    --ig-purple-hover: #7c3aed;
+}
+
+[data-bs-theme="light"] body {
+    background: linear-gradient(295deg, #c0b3ff 0%, #9990bd 50%, #9a74c4 100%);
+    background-attachment: fixed;
+    color: #1c1e21;
+}
+
+[data-bs-theme="dark"] body {
+    background: linear-gradient(82deg, #0f0c1b 0%, #271f38 50%, #200e41 100%);
+    background-attachment: fixed;
+}
+[data-bs-theme="light"] .card {
+    background: #d4bcd6b8;
+}
+
+[data-bs-theme="dark"] .card {
+    background: #212529;
+}
+
+.navbar {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background-color: rgba(15, 12, 27, 0.85) !important;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.card {
+    border-radius: 16px;
+    border: 1px solid rgba(139, 92, 246, 0.15) !important;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 6px 24px rgba(139, 92, 246, 0.12);
+}
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.btn-primary {
+    background-color: var(--ig-purple);
+    border-color: var(--ig-purple);
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-primary:hover {
+    background-color: var(--ig-purple-hover);
+    border-color: var(--ig-purple-hover);
+    transform: translateY(-1px);
+}
+
+.btn-danger, .btn-outline-danger, .btn-outline-secondary, .btn-outline-light {
+    border-radius: 10px;
+}
+
+.form-control {
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 2px solid var(--bs-border-color);
+    background-color: transparent;
+}
+
+.form-control:focus {
+    border-color: var(--ig-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.feed-avatar {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--ig-purple);
+}
+
+.profile-avatar-large {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid var(--ig-purple);
+}
+.input-group textarea.form-control {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    resize: none;
+    height: 38px;
+    min-height: 38px;
+    font-size: 0.85rem;
+}
+
+.input-group .btn-outline-primary {
+    border-color: var(--ig-purple, #8b5cf6);
+    color: var(--ig-purple, #8b5cf6);
+}
+
+.input-group .btn-outline-primary:hover {
+    background-color: var(--ig-purple, #8b5cf6);
+    color: #fff;
+}
+
+/* Контейнер переключателя */
+.feed-switcher {
+    position: relative;
+    background-color: var(--bs-card-bg);
+    border: 1px solid rgb(73 62 97 / 30%);
+    padding: 4px;
+    border-radius: 50rem;
+    display: inline-flex;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+/* Кнопки внутри переключателя */
+.feed-switcher .feed-tab {
+    position: relative;
+    z-index: 2;
+    border-radius: 50rem;
+    padding: 8px 24px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: var(--bs-body-color);
+    background: transparent;
+    border: none;
+    transition: color 0.25s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.feed-switcher .feed-tab:hover {
+    color: var(--ig-purple);
+}
+
+.feed-switcher .feed-tab.active {
+    color: #ffffff !important;
+}
+
+/* Сама скользящая фиолетовая пилюля */
+.switcher-pill {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: 130px !important;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border-radius: 50rem;
+    /* Плавная анимация перемещения и изменения ширины */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    z-index: 1;
+}
+
+/* Премиальный стеклянный навбар */
+.custom-navbar {
+    background-color: rgba(15, 15, 22, 0.75) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+/* Брендинг */
+.navbar-brand-custom {
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.3px;
+    color: #ffffff !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Единый стиль для кнопок в навбаре */
+.nav-pill {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c0b3ff !important;
+    border-radius: 50rem;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-pill:hover {
+    background-color: rgba(139, 92, 246, 0.15);
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+    transform: translateY(-1px);
+}
+
+/* Специальная кнопка выхода (аккуратная, без кричащего красного) */
+.nav-pill-logout {
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+}
+
+.nav-pill-logout:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+/* Кнопка переключения темы */
+.theme-toggle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(139, 92, 246, 0.15);
+    border-color: #8b5cf6;
+}

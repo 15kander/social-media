@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Поиск пользователей | SocialMedia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        
+        <h3 class="fw-bold mb-4 text-center mt-3">Поиск пользователей</h3>
+
+        <!-- Форма поиска -->
+        <form method="get" action="{% url 'user_search' %}" class="mb-4">
+            <div class="input-group shadow-sm">
+                <input type="text" name="q" class="form-control" placeholder="Введите имя пользователя (@username)..." value="{{ query }}" style="border-top-left-radius: 50rem; border-bottom-left-radius: 50rem; padding-left: 20px;">
+                <button type="submit" class="btn btn-primary px-4" style="border-top-right-radius: 50rem; border-bottom-right-radius: 50rem;">Найти</button>
+            </div>
+        </form>
+
+        <!-- Результаты -->
+        {% if query %}
+            <div class="card shadow-sm border-0 p-3">
+                <h6 class="text-muted mb-3" style="font-size: 0.85rem;">Результаты по запросу: "{{ query }}"</h6>
+                
+                <div class="list-group list-group-flush">
+                    {% for target_user in users %}
+                        <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-3 px-2 border-secondary-subtle">
+                            <div class="d-flex align-items-center">
+                                <a href="{% url 'profile' target_user.username %}" class="me-3 text-decoration-none">
+                                    {% if target_user.profile.avatar %}
+                                        <img src="{{ target_user.profile.avatar.url }}" class="rounded-circle" width="45" height="45" style="object-fit: cover; border: 2px solid #8b5cf6;" alt="Avatar">
+                                    {% else %}
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px; font-size: 16px; border: 2px solid #8b5cf6;">
+                                            {{ target_user.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </a>
+                                <div>
+                                    <a href="{% url 'profile' target_user.username %}" class="text-decoration-none fw-bold text-body" style="font-size: 0.95rem;">
+                                        @{{ target_user.username }}
+                                    </a>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        {{ target_user.followers_set.count }} подписчиков
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a href="{% url 'profile' target_user.username %}" class="btn btn-outline-primary btn-sm rounded-pill px-3" style="font-size: 0.85rem;">Профиль</a>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted text-center py-4 mb-0">Пользователей с таким именем не найдено.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

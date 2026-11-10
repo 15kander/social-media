@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Лента постов | SocialMedia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 ">
+        
+        {% if user.is_authenticated %}
+            <div class="card shadow-sm border-0 mb-4 mt-3 p-3 text-center" style="border-radius: 16px;">
+                <a href="{% url 'create_post' %}" class="btn btn-primary rounded-pill py-2 w-100 fw-bold">
+                    ✍️ Создать новую публикацию
+                </a>
+            </div>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+            <div class="d-flex justify-content-center mb-4">
+                <div class="feed-switcher" id="feedSwitcher">
+                    <!-- Скользящий фон -->
+                    <div class="switcher-pill" id="switcherPill"></div>
+
+                    <button type="button" class="feed-tab {% if active_feed == 'all' %}active{% endif %}" data-url="{% url 'feed' %}">🌐 Все посты</button>
+                    <button type="button" class="feed-tab {% if active_feed == 'following' %}active{% endif %}" data-url="{% url 'feed' %}?feed=following">👥 Подписки</button>
+                </div>
+            </div>
+        {% endif %}
+
+        <div id="posts-container" style="transition: opacity 0.15s ease;">
+            {% include 'posts/partials/posts_list.html' %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function movePill(activeTab) {
+        const pill = document.getElementById('switcherPill');
+        if (!pill || !activeTab) return;
+
+        const switcherRect = activeTab.parentElement.getBoundingClientRect();
+        const tabRect = activeTab.getBoundingClientRect();
+
+        const left = tabRect.left - switcherRect.left;
+        const width = tabRect.width;
+
+        pill.style.transform = `translateX(${left}px)`;
+        pill.style.width = `${width}px`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const activeTab = document.querySelector('.feed-tab.active');
+        if (activeTab) {
+            const pill = document.getElementById('switcherPill');
+            // Убираем анимацию на мгновение при загрузке, чтобы пилюля не ездила с края
+            pill.style.transition = 'none';
+            movePill(activeTab);
+            setTimeout(() => {
+                pill.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            }, 50);
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.feed-tab');
+        if (!btn) return;
+
+        document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        movePill(btn);
+        const url = btn.getAttribute('data-url');
+        const container = document.getElementById('posts-container');
+        container.style.opacity = '0.3';
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.text())
+        .then(html => {
+            container.innerHTML = html;
+            container.style.opacity = '1';
+            window.history.pushState({}, '', url);
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            container.style.opacity = '1';
+        });
+    });
+</script>
+{% endblock %}

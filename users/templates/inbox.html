@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Сообщения | SocialMedia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-3">
+    <div class="col-md-6">
+        <h3 class="fw-bold mb-4">Сообщения</h3>
+
+        <div class="card shadow-sm border-0 p-3">
+            <div class="list-group list-group-flush">
+                {% for chat in chats_data %}
+                    <a href="{% url 'chat_detail' chat.user.username %}" class="list-group-item list-group-item-action bg-transparent d-flex align-items-center py-3 px-2 border-secondary-subtle position-relative">
+                        {% if chat.user.profile.avatar %}
+                            <img src="{{ chat.user.profile.avatar.url }}" class="rounded-circle me-3" width="45" height="45" style="object-fit: cover; border: 2px solid #8b5cf6;" alt="Avatar">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 45px; height: 45px; font-size: 16px; border: 2px solid #8b5cf6;">
+                                {{ chat.user.username|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold text-body">@{{ chat.user.username }}</h6>
+                            <span class="text-muted small">Нажмите, чтобы открыть чат</span>
+                        </div>
+                        <div>
+                            {% if chat.unread_count > 0 %}
+                                <span class="badge rounded-pill bg-danger">
+                                    {{ chat.unread_count }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </a>
+                {% empty %}
+                    <p class="text-muted text-center py-4 mb-0">У вас пока нет активных диалогов. Напишите кому-нибудь из поиска!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

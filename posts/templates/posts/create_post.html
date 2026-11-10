@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать публикацию | SocialMedia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 p-4 mt-4" style="border-radius: 16px; background-color: var(--bs-body-bg);">
+            <h4 class="fw-bold mb-4">Создать публикацию</h4>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    {{ form.content }}
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted small">Прикрепить картинку</label>
+                    {{ form.image }}
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 flex-fill">Опубликовать</button>
+                    <a href="{% url 'feed' %}" class="btn btn-outline-secondary rounded-pill px-4">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

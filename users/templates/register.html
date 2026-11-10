@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация | SocialMedia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0 p-4">
+            <h3 class="fw-bold mb-3 text-center">Создать аккаунт</h3>
+            
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary w-100 rounded-pill mt-3 py-2">Зарегистрироваться</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <span class="text-muted small">Уже есть аккаунт?</span> 
+                <a href="{% url 'login' %}" class="text-decoration-none fw-bold" style="color: var(--ig-purple);">Войти</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

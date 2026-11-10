@@ -1,0 +1,124 @@
+{% if posts %}
+    {% for post in posts %}
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body pb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'profile' post.author.username %}" class="text-decoration-none me-2">
+                            {% if post.author.profile.avatar %}
+                                <img src="{{ post.author.profile.avatar.url }}" class="rounded-circle" width="38" height="38" style="object-fit: cover; border: 2px solid #8b5cf6;" alt="Avatar">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; font-size: 14px; border: 2px solid #8b5cf6;">
+                                    {{ post.author.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div>
+                            <a href="{% url 'profile' post.author.username %}" class="text-decoration-none fw-bold text-body" style="font-size: 0.95rem;">
+                                @{{ post.author.username }}
+                            </a>
+                            <div class="text-muted" style="font-size: 0.75rem; line-height: 1;">
+                                {{ post.created_at|date:"d.m.Y в H:i" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user == post.author or user.is_superuser%}
+                        <div class="d-flex gap-2 mt-2">
+                            <a href="{% url 'edit_post' post.pk %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">✏️ Редактировать</a>
+                            <a href="{% url 'delete_post' post.pk %}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Удалить этот пост?');">🗑️ Удалить</a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <p class="card-text mt-3 mb-2" style="font-size: 0.95rem;">{{ post.content }}</p>
+            </div>
+
+            {% if post.image %}
+                <img src="{{ post.image.url }}" class="w-100" style="object-fit: cover; max-height: 450px;" alt="Картинка поста">
+            {% endif %}
+
+            <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center pt-2 pb-2">
+                <span class="text-muted small" id="likes-count-{{ post.pk }}">❤️ {{ post.likes.count }} лайков</span>
+
+                {% if user.is_authenticated %}
+                    <button type="button" class="btn btn-sm  like-btn" data-post-id="{{ post.pk }}" style="border-radius: 20px; font-size: 1.7rem; padding: 4px 12px;">
+                        {% if user in post.likes.all %}❤️ {% else %}🤍 {% endif %}
+                    </button>
+                {% endif %}
+            </div>
+
+            <div class="card-footer bg-transparent border-top">
+                <div class="text-muted mb-2" style="font-size: 0.85rem; font-weight: 600;">Комментарии ({{ post.comments.count }})</div>
+                
+                {% for comment in post.comments.all %}
+                    <div class="mb-2 p-2 rounded d-flex justify-content-between align-items-start" style="font-size: 0.85rem; background-color: var(--bs-tertiary-bg);">
+                        <div>
+                            <strong>@{{ comment.author.username }}</strong>
+                            <span class="text-muted ms-1" style="font-size: 0.7rem;">{{ comment.created_at|date:"d.m H:i" }}</span>
+                            <p class="mb-0 mt-1">{{ comment.content }}</p>
+                        </div>
+                        {% if user == comment.author or user.is_superuser %}
+                            <div class="d-flex gap-2 mt-1" style="font-size: 0.8rem;">
+                                <a href="{% url 'edit_comment' comment.pk %}" class="text-decoration-none text-muted">✏️ Редактировать</a>
+                                <a href="{% url 'delete_comment' comment.pk %}" class="text-decoration-none text-danger">🗑️ Удалить</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-muted small mb-2">Пока нет комментариев.</p>
+                {% endfor %}
+
+                {% if user.is_authenticated %}
+                    <form method="post" class="mt-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="post_id" value="{{ post.pk }}">
+                        <div class="input-group input-group-sm">
+                            {{ comment_form.content }}
+                            <button type="submit" name="comment_form_submit" class="btn btn-outline-primary" style="border-top-right-radius: 12px; border-bottom-right-radius: 12px;">Отправить</button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info text-center">
+        {% if active_feed == 'following' %}
+            Вы ни на кого не подписаны или у ваших подписок пока нет постов.
+        {% else %}
+            Пока нет ни одного поста. Создайте первый выше!
+        {% endif %}
+    </div>
+{% endif %}
+<script>
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.like-btn');
+    if (!btn) return;
+
+    const postId = btn.dataset.postId;
+
+    fetch(`/post/${postId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Обновляем текст счетчика лайков
+        const countSpan = document.getElementById(`likes-count-${postId}`);
+        if (countSpan) {
+            countSpan.textContent = `❤️ ${data.likes_count} лайков`;
+        }
+
+        // Меняем стиль и текст самой кнопки
+        if (data.liked) {
+            btn.innerHTML = '❤️';
+        } else {
+            btn.innerHTML = '🤍';
+        }
+    });
+});
+</script>

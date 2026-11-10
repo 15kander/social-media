@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}SocialMedia{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+    {% block extra_head %}{% endblock %}
+    <style>
+        html{font-size: 18px}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg custom-navbar sticky-top">
+        <div class="container">
+            <!-- Логотип -->
+            <a href="{% url 'feed' %}" class="navbar-brand-custom">
+                <span style="font-size: 1.3rem;">🌐</span>
+                <span>Social<span style="color: #8b5cf6;">Media</span></span>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'inbox' %}" class="nav-pill position-relative">
+                        💬 Чаты
+                        {% if unread_messages_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ unread_messages_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'user_search' %}" class="nav-pill">
+                        🔍 Поиск
+                    </a>
+                    <a href="{% url 'profile' user.username %}" class="nav-pill">
+                        👤 Профиль
+                    </a>
+                    <a href="{% url 'notifications' %}" class="nav-pill position-relative">
+                        🔔 Уведомления
+                        {% if unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ unread_notifications_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+
+                    {% if user.is_superuser %}
+                        <a href="{% url 'admin:index' %}" class="nav-pill" style="border-color: rgba(234, 179, 8, 0.4); color: #facc15;">
+                            ⚙️ Админка
+                        </a>
+                    {% endif %}
+                    <form action="{% url 'logout' %}" method="post" class="d-inline m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-pill nav-pill-logout border-0" style="cursor: pointer;">
+                            Выйти
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-pill">Войти</a>
+                    <a href="{% url 'register' %}" class="nav-pill" style="background-color: #8b5cf6; color: #fff; border-color: #8b5cf6;">Регистрация</a>
+                {% endif %}
+                <button class="theme-toggle-btn ms-1" id="themeToggle" title="Сменить тему">
+                    ☀️
+                </button>
+            </div>
+        </div>
+    </nav>
+    <main class="container pb-3">
+        {% block content %}
+        {% endblock %}
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById('themeToggle');
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-bs-theme', savedTheme);
+        updateButtonView(savedTheme);
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            htmlElement.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateButtonView(newTheme);
+        });
+
+        function updateButtonView(theme) {
+            if (theme === 'dark') {
+                themeToggleBtn.textContent = '☀️ ';
+            } else {
+                themeToggleBtn.textContent = '🌙 ';
+            }
+        }
+    </script>
+
+</body>
+</html>

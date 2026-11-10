@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Уведомления | SocialMedia{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h3 class="fw-bold mb-4 mt-3">Уведомления</h3>
+
+        <div class="card shadow-sm border-0 p-3">
+            <div class="list-group list-group-flush">
+                {% for notif in notifications %}
+                    <div class="list-group-item bg-transparent d-flex align-items-center justify-content-between py-3 px-3 border-secondary-subtle">
+                        <div class="d-flex align-items-center">
+                            {% if notif.sender.profile.avatar %}
+                                <img src="{{ notif.sender.profile.avatar.url }}" class="rounded-circle me-3" width="40" height="40" style="object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px;">
+                                    {{ notif.sender.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+
+                            <div>
+                                <h6 class="mb-1 fw-bold text-body">
+                                    @{{ notif.sender.username }}
+                                    <span class="fw-normal text-muted small">
+                                        {% if notif.notification_type == 'like' %}
+                                            оценил(-а) вашу публикацию
+                                        {% elif notif.notification_type == 'comment' %}
+                                            оставил(-а) комментарий:
+                                        {% elif notif.notification_type == 'follow' %}
+                                            подписался на вас
+                                        {% elif notif.notification_type == 'message' %}
+                                            прислал сообщение
+                                        {% endif %}
+                                    </span>
+                                </h6>
+
+                                {% if notif.text %}
+                                    <p class="mb-1 text-body fst-italic small bg-opacity-25 p-2 rounded">
+                                        «{{ notif.text }}»
+                                    </p>
+                                {% endif %}
+
+                                <small class="text-muted" style="font-size: 0.75rem;">{{ notif.created_at|date:"d.m.Y в H:i" }}</small>
+                            </div>
+                        </div>
+
+                        <div>
+                            {% if notif.post %}
+                                <a href="{% url 'feed' %}#post-{{ notif.post.pk }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    К посту
+                                </a>
+                            {% elif notif.notification_type == 'message' %}
+                                <a href="{% url 'chat_detail' notif.sender.username %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    Чат
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted text-center py-4 mb-0">У вас пока нет уведомлений.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
