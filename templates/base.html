@@ -22,7 +22,7 @@
             <div class="d-flex align-items-center gap-2">
                 {% if user.is_authenticated %}
                     <a href="{% url 'inbox' %}" class="nav-pill position-relative">
-                        💬 Чаты
+                        💬
                         {% if unread_messages_count > 0 %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                 {{ unread_messages_count }}
@@ -30,13 +30,13 @@
                         {% endif %}
                     </a>
                     <a href="{% url 'user_search' %}" class="nav-pill">
-                        🔍 Поиск
+                        🔍
                     </a>
                     <a href="{% url 'profile' user.username %}" class="nav-pill">
-                        👤 Профиль
+                        👤
                     </a>
                     <a href="{% url 'notifications' %}" class="nav-pill position-relative">
-                        🔔 Уведомления
+                        🔔
                         {% if unread_notifications_count > 0 %}
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             {{ unread_notifications_count }}

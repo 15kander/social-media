@@ -32,6 +32,8 @@
                                             подписался на вас
                                         {% elif notif.notification_type == 'message' %}
                                             прислал сообщение
+                                        {% elif notif.notification_type == 'follow_accepted' %}
+                                            одобрил(-а) ваш запрос на подписку
                                         {% endif %}
                                     </span>
                                 </h6>
@@ -54,6 +56,10 @@
                             {% elif notif.notification_type == 'message' %}
                                 <a href="{% url 'chat_detail' notif.sender.username %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                     Чат
+                                </a>
+                            {% elif notif.notification_type == 'follow_accepted' or notif.notification_type == 'follow' %}
+                                <a href="{% url 'profile' notif.sender.username %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    Профиль
                                 </a>
                             {% endif %}
                         </div>

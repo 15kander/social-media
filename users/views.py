@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import login
@@ -36,24 +37,73 @@ def profile_view(request, username):
     if they_blocked_us:
         raise Http404("Пользователь не найден")
 
-    posts = profile_user.post_set.all().order_by('-created_at')
+    profile, created = Profile.objects.get_or_create(user=profile_user)
     is_following = False
-    if request.user.is_authenticated and request.user != profile_user:
-        is_following = Follow.objects.filter(follower=request.user, following=profile_user).exists()
+    follow_request_sent = False
+    can_view_posts = False
+    pending_requests = []
+    if request.user.is_authenticated and request.user == profile_user:
+        pending_requests = Follow.objects.filter(following=request.user, is_approved=False)
+    if not profile.is_private:
+        can_view_posts = True
+    if request.user.is_authenticated:
+        if request.user == profile_user:
+            can_view_posts = True
+        else:
+            follow_obj = Follow.objects.filter(follower=request.user, following=profile_user).first()
+            if follow_obj:
+                if follow_obj.is_approved:
+                    is_following = True
+                    can_view_posts = True
+                else:
+                    follow_request_sent=True
+    posts = profile_user.post_set.all().order_by('-created_at') if can_view_posts else []
     is_blocked = Block.objects.filter(blocker=request.user, blocked=profile_user).exists() if request.user.is_authenticated else False
     followers_count = profile_user.followers_set.count()
     following_count = profile_user.following_set.count()
 
     context = {
         'profile_user': profile_user,
+        'profile':profile,
         'posts': posts,
         'is_blocked':is_blocked,
         'is_following': is_following,
+        'follow_request_sent': follow_request_sent,
+        'can_view_posts': can_view_posts,
         'followers_count': followers_count,
         'following_count': following_count,
+        'pending_requests':pending_requests,
     }
     return render(request, 'profile.html', context)
 
+@login_required
+def toggle_privacy(request):
+    if request.method == 'POST':
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        profile.is_private = not profile.is_private
+        profile.save()
+    return redirect('profile',username=request.user.username)
+
+
+@login_required
+def accept_follow(request, username):
+    follower_user = get_object_or_404(User, username=username)
+    follow_obj = get_object_or_404(Follow, follower=follower_user, following=request.user, is_approved=False)
+    follow_obj.is_approved = True
+    follow_obj.save()
+    Notification.objects.create(
+        recipient=follower_user,
+        sender=request.user,
+        notification_type='follow_accepted'
+    )
+    return redirect('profile', username=request.user.username)
+
+@login_required
+def reject_follow(request, username):
+    follower_user = get_object_or_404(User, username=username)
+    follow_obj = get_object_or_404(Follow, follower=follower_user, following=request.user, is_approved=False)
+    follow_obj.delete()
+    return redirect('profile', username=request.user.username)
 
 def edit_profile(request):
     if not request.user.is_authenticated:
@@ -105,8 +155,10 @@ def toggle_follow(request, username):
     existing_follow = Follow.objects.filter(follower=request.user, following=profile_user).first()
 
     if not existing_follow:
-        Follow.objects.create(follower=request.user, following=profile_user)
-        # Создаем уведомление о подписке
+        profile, _ = Profile.objects.get_or_create(user=profile_user)
+        is_approved = not profile.is_private
+
+        Follow.objects.create(follower=request.user, following=profile_user, is_approved=is_approved)
         Notification.objects.create(
             recipient=profile_user,
             sender=request.user,
@@ -117,10 +169,17 @@ def toggle_follow(request, username):
 
     return redirect('profile', username=username)
 
-
+@login_required
 def followers_view(request, username):
     profile_user = get_object_or_404(User, username=username)
-    followers = [f.follower for f in profile_user.followers_set.all()]
+    if Block.objects.filter(blocker=profile_user, blocked=request.user).exists():
+        raise Http404("Пользователь не найден")
+    profile,_=Profile.objects.get_or_create(user=profile_user)
+    is_approved_follower = Follow.objects.filter(follower=request.user, following=profile_user,is_approved=True).exists()
+    can_view = not profile.is_private or request.user == profile_user or is_approved_follower
+    if not can_view:
+        return redirect('profile',username=username)
+    followers = [f.follower for f in profile_user.followers_set.filter(is_approved=True)]
 
     context = {
         'profile_user': profile_user,
@@ -129,10 +188,18 @@ def followers_view(request, username):
     }
     return render(request, 'user_list.html', context)
 
-
+@login_required
 def following_view(request, username):
     profile_user = get_object_or_404(User, username=username)
-    following = [f.following for f in profile_user.following_set.all()]
+    if Block.objects.filter(blocker=profile_user, blocked=request.user).exists():
+        raise Http404("Пользователь не найден")
+    profile, _ = Profile.objects.get_or_create(user=profile_user)
+
+    is_approved_follower = Follow.objects.filter(follower=request.user, following=profile_user,is_approved=True).exists()
+    can_view = not profile.is_private or request.user == profile_user or is_approved_follower
+    if not can_view:
+        return redirect('profile',username=username)
+    following = [f.following for f in profile_user.following_set.filter(is_approved=True)]
 
     context = {
         'profile_user': profile_user,

@@ -10,6 +10,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(max_length=500, blank=True, verbose_name="О себе")
     avatar = models.ImageField(upload_to='avatars/', default='avatars/default.jpg', blank=True, null=True, verbose_name="Аватар")
+    is_private = models.BooleanField(default=False)
     def __str__(self):
         return f'Профиль {self.user.username}'
 
@@ -25,13 +26,14 @@ def save_user_profile(sender, instance, **kwargs):
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following_set',verbose_name='Кто подписывается',)
     following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers_set', verbose_name='На кого подписывается',)
+    is_approved = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = (('follower', 'following'),)
 
     def __str__(self):
-        return f'{self.follower.username} -> {self.following.username}'
+        return f'{self.follower.username} -> {self.following.username} (approved: {self.is_approved})'
 
 class Message(models.Model):
     sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
@@ -44,7 +46,7 @@ class Message(models.Model):
         return f'От @{self.sender.username} к @{self.recipient.username}: {self.content[:20]}'
 
 class Notification(models.Model):
-    NOTIFICATION_TYPES = (('follow', 'подписался на вас'), ('like', 'оценил ваш пост'), ('message', 'прислал сообщение'),('comment', 'оставил комментарий'),)
+    NOTIFICATION_TYPES = (('follow', 'подписался на вас'), ('like', 'оценил ваш пост'), ('message', 'прислал сообщение'),('comment', 'оставил комментарий'),('follow_accepted','Подписка одобрена'))
     recipient = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
     sender = models.ForeignKey(User, related_name='sent_notifications', on_delete=models.CASCADE)
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)

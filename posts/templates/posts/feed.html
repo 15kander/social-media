@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6 ">
-        
+
         {% if user.is_authenticated %}
             <div class="card shadow-sm border-0 mb-4 mt-3 p-3 text-center" style="border-radius: 16px;">
                 <a href="{% url 'create_post' %}" class="btn btn-primary rounded-pill py-2 w-100 fw-bold">
@@ -17,16 +17,14 @@
         {% if user.is_authenticated %}
             <div class="d-flex justify-content-center mb-4">
                 <div class="feed-switcher" id="feedSwitcher">
-                    <!-- Скользящий фон -->
                     <div class="switcher-pill" id="switcherPill"></div>
-
                     <button type="button" class="feed-tab {% if active_feed == 'all' %}active{% endif %}" data-url="{% url 'feed' %}">🌐 Все посты</button>
                     <button type="button" class="feed-tab {% if active_feed == 'following' %}active{% endif %}" data-url="{% url 'feed' %}?feed=following">👥 Подписки</button>
                 </div>
             </div>
         {% endif %}
 
-        <div id="posts-container" style="transition: opacity 0.15s ease;">
+        <div id="posts-container" style="transition: opacity 0.15s ease;" class='mt-4'>
             {% include 'posts/partials/posts_list.html' %}
         </div>
 
@@ -52,7 +50,6 @@
         const activeTab = document.querySelector('.feed-tab.active');
         if (activeTab) {
             const pill = document.getElementById('switcherPill');
-            // Убираем анимацию на мгновение при загрузке, чтобы пилюля не ездила с края
             pill.style.transition = 'none';
             movePill(activeTab);
             setTimeout(() => {

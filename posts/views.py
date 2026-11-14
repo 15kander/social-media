@@ -36,7 +36,6 @@ def create_post_view(request):
 
 
 def feed_view(request):
-  # Обработка отправки комментариев
   if request.method == 'POST' and 'comment_form_submit' in request.POST:
     comment_form = CommentForm(request.POST)
     post_id = request.POST.get('post_id')
