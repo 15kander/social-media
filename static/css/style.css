@@ -150,11 +150,9 @@
     position: absolute;
     top: 4px;
     bottom: 4px;
-    left: 4px;
-    width: 130px !important;
+    left: 0; /* Важно: стартуем от нуля, а JS сам подвинет ее куда надо */
     background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     border-radius: 50rem;
-    /* Плавная анимация перемещения и изменения ширины */
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
     z-index: 1;

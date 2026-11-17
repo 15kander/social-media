@@ -4,10 +4,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
+from .models import Profile, Follow, Message, Notification, Block, Post
 
 from posts.views import get_blocked_users_ids
-from .context_processors import unread_counts
-from .models import Profile, Follow, Message, Notification, Block
 from .forms import UserUpdateForm, ProfileUpdateForm
 from django.http import Http404
 
@@ -128,16 +127,44 @@ def edit_profile(request):
 
 
 def search_users(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     users = []
+    posts = []
+
     if query and request.user.is_authenticated:
-        excluded_users = get_blocked_users_ids(request.user)
+        # Превращаем заблокированных в обычный список ID
+        excluded_users = list(get_blocked_users_ids(request.user))
         excluded_users.append(request.user.id)
+
+        # 1. Поиск пользователей
         users = User.objects.filter(
             Q(username__icontains=query) | Q(email__icontains=query)
-        ).exclude(id=request.user.id)
+        ).exclude(id__in=excluded_users).distinct()
 
-    return render(request, 'search.html', {'users': users, 'query': query})
+        # 2. Получаем ID одобренных подписок в виде чистого списка чисел через list()
+        approved_following_ids = list(
+            Follow.objects.filter(
+                follower=request.user,
+                is_approved=True
+            ).values_list('following_id', flat=True)
+        )
+
+        # 3. Поиск постов с учетом приватности и черного списка
+        posts = Post.objects.filter(
+            content__icontains=query
+        ).filter(
+            Q(author__profile__is_private=False) |
+            Q(author=request.user) |
+            Q(author_id__in=approved_following_ids)
+        ).exclude(
+            author_id__in=excluded_users
+        ).distinct().order_by('-created_at')
+
+    return render(request, 'search.html', {
+        'users': users,
+        'posts': posts,
+        'query': query
+    })
 
 
 def toggle_follow(request, username):

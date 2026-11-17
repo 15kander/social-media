@@ -145,14 +145,13 @@
                     {% if post.image %}
                         <img src="{{ post.image.url }}" class="img-fluid rounded-4 mb-3" style="max-height: 400px; width: 100%; object-fit: cover;" alt="Post image">
                     {% endif %}
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <form action="{% url 'like_post' post.pk %}" method="post" class="m-0">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm rounded-pill px-3 {% if request.user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                                ❤️ {{ post.likes.count }}
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <button type="button" class="btn rounded-pill px-3 like-btn " data-post-id="{{ post.pk }}" style="border-radius: 20px; font-size: 1.7rem; padding: 4px 12px;">
+                                <span class="like-icon">{% if user in post.likes.all %}❤️ {% else %}🤍 {% endif %}</span> <span id="likes-count-{{ post.pk }}">{{ post.likes.count }}</span>
                             </button>
-                        </form>
-                        <span class="text-muted small">💬 {{ post.comments.count }} комментариев</span>
+                            <span class="text-muted small">💬 {{ post.comments.count }} комментариев</span>
+                        </div>
                     </div>
                     <div class="border-top pt-3 mt-2">
                         <div class="comments-list mb-3" style="max-height: 200px; overflow-y: auto;">
@@ -191,4 +190,30 @@
         {% endif %}
     </div>
 </div>
+<script>
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.like-btn');
+    if (!btn) return;
+    const postId = btn.dataset.postId;
+    fetch(`/post/${postId}/like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        const countSpan = document.getElementById(`likes-count-${postId}`);
+        if (countSpan) {
+            countSpan.textContent = data.likes_count;
+        }
+        const iconSpan = btn.querySelector('.like-icon');
+        if (iconSpan) {
+            iconSpan.textContent = data.liked ? '❤️' : '🤍';
+        }
+    })
+    .catch(error => console.error('Ошибка лайка:', error));
+});
+</script>
 {% endblock %}

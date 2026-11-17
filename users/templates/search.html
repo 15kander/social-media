@@ -1,58 +1,148 @@
 {% extends 'base.html' %}
 
-{% block title %}Поиск пользователей | SocialMedia{% endblock %}
+{% block title %}Поиск | SocialMedia{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        
-        <h3 class="fw-bold mb-4 text-center mt-3">Поиск пользователей</h3>
 
-        <!-- Форма поиска -->
-        <form method="get" action="{% url 'user_search' %}" class="mb-4">
+        <h3 class="fw-bold mb-4 text-center mt-3">Поиск по сайту</h3>
+
+        <!-- Возвращаем форму поиска -->
+        <form method="get" action="{% url 'search' %}" class="mb-4">
             <div class="input-group shadow-sm">
-                <input type="text" name="q" class="form-control" placeholder="Введите имя пользователя (@username)..." value="{{ query }}" style="border-top-left-radius: 50rem; border-bottom-left-radius: 50rem; padding-left: 20px;">
+                <input type="text" name="q" class="form-control" placeholder="Имя пользователя или текст поста..." value="{{ query|default:'' }}" style="border-top-left-radius: 50rem; border-bottom-left-radius: 50rem; padding-left: 20px;">
                 <button type="submit" class="btn btn-primary px-4" style="border-top-right-radius: 50rem; border-bottom-right-radius: 50rem;">Найти</button>
             </div>
         </form>
 
-        <!-- Результаты -->
-        {% if query %}
-            <div class="card shadow-sm border-0 p-3">
-                <h6 class="text-muted mb-3" style="font-size: 0.85rem;">Результаты по запросу: "{{ query }}"</h6>
-                
-                <div class="list-group list-group-flush">
-                    {% for target_user in users %}
-                        <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-3 px-2 border-secondary-subtle">
-                            <div class="d-flex align-items-center">
-                                <a href="{% url 'profile' target_user.username %}" class="me-3 text-decoration-none">
-                                    {% if target_user.profile.avatar %}
-                                        <img src="{{ target_user.profile.avatar.url }}" class="rounded-circle" width="45" height="45" style="object-fit: cover; border: 2px solid #8b5cf6;" alt="Avatar">
-                                    {% else %}
-                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px; font-size: 16px; border: 2px solid #8b5cf6;">
-                                            {{ target_user.username|slice:":1"|upper }}
-                                        </div>
-                                    {% endif %}
-                                </a>
-                                <div>
-                                    <a href="{% url 'profile' target_user.username %}" class="text-decoration-none fw-bold text-body" style="font-size: 0.95rem;">
-                                        @{{ target_user.username }}
+        <!-- Кастомный переключатель вкладок -->
+        <div class="d-flex justify-content-center mb-4">
+            <div class="feed-switcher" id="feedSwitcher">
+                <div class="switcher-pill" id="switcherPill"></div>
+
+                <button type="button" class="feed-tab active" data-target="users-pane">
+                    👥 Люди <span class="text-light ms-1">{{ users.count }}</span>
+                </button>
+                <button type="button" class="feed-tab" data-target="posts-pane">
+                    📝 Посты <span class="text-light ms-1">{{ posts.count }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Контент вкладок -->
+        <div class="tab-content" id="searchTabContent">
+            <!-- Вкладка: Люди -->
+            <div class="tab-pane fade show active" id="users-pane" role="tabpanel">
+                <div class="card shadow-sm border-0 p-3" style="border-radius: 16px;">
+                    <div class="list-group list-group-flush">
+                        {% for target_user in users %}
+                            <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-3 px-2 border-secondary-subtle">
+                                <div class="d-flex align-items-center">
+                                    <a href="{% url 'profile' target_user.username %}" class="me-3 text-decoration-none">
+                                        {% if target_user.profile.avatar %}
+                                            <img src="{{ target_user.profile.avatar.url }}" class="rounded-circle" width="45" height="45" style="object-fit: cover; border: 2px solid #8b5cf6;" alt="Avatar">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px; font-size: 16px; border: 2px solid #8b5cf6;">
+                                                {{ target_user.username|slice:":1"|upper }}
+                                            </div>
+                                        {% endif %}
                                     </a>
-                                    <div class="text-muted" style="font-size: 0.75rem;">
-                                        {{ target_user.followers_set.count }} подписчиков
+                                    <div>
+                                        <a href="{% url 'profile' target_user.username %}" class="text-decoration-none fw-bold text-body" style="font-size: 0.95rem;">
+                                            @{{ target_user.username }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            {{ target_user.followers_set.count }} подписчиков
+                                        </div>
                                     </div>
                                 </div>
+                                <a href="{% url 'profile' target_user.username %}" class="btn btn-outline-primary btn-sm rounded-pill px-3" style="font-size: 0.85rem;">Профиль</a>
                             </div>
-
-                            <a href="{% url 'profile' target_user.username %}" class="btn btn-outline-primary btn-sm rounded-pill px-3" style="font-size: 0.85rem;">Профиль</a>
-                        </div>
-                    {% empty %}
-                        <p class="text-muted text-center py-4 mb-0">Пользователей с таким именем не найдено.</p>
-                    {% endfor %}
+                        {% empty %}
+                            <p class="text-muted text-center py-4 mb-0">Пользователей не найдено.</p>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-        {% endif %}
+
+            <!-- Вкладка: Посты -->
+            <div class="tab-pane fade" id="posts-pane" role="tabpanel">
+                {% for post in posts %}
+                    <div class="card shadow-sm mb-4 border-0 p-3" style="border-radius: 16px;">
+                        <div class="d-flex align-items-center mb-3">
+                            {% if post.author.profile.avatar %}
+                                <img src="{{ post.author.profile.avatar.url }}" class="rounded-circle me-2" width="38" height="38" style="object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold me-2" style="width: 38px; height: 38px; font-size: 14px;">
+                                    {{ post.author.username|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                            <a href="{% url 'profile' post.author.username %}" class="text-decoration-none fw-bold text-body">
+                                @{{ post.author.username }}
+                            </a>
+                        </div>
+                        <p class="mb-3">{{ post.content }}</p>
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" class="img-fluid rounded-4 mb-3" style="max-height: 400px; width: 100%; object-fit: cover;" alt="Post image">
+                        {% endif %}
+                        <a href="{% url 'profile' post.author.username %}" class="btn btn-sm btn-outline-secondary rounded-pill">Перейти к профилю</a>
+                    </div>
+                {% empty %}
+                    <div class="card shadow-sm border-0 p-4 text-center" style="border-radius: 16px;">
+                        <p class="text-muted mb-0">Публикаций по запросу не найдено.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
 
     </div>
 </div>
+
+<script>
+    function movePill(activeTab) {
+        const pill = document.getElementById('switcherPill');
+        if (!pill || !activeTab) return;
+
+        const switcherRect = activeTab.parentElement.getBoundingClientRect();
+        const tabRect = activeTab.getBoundingClientRect();
+
+        const left = tabRect.left - switcherRect.left;
+        const width = tabRect.width;
+
+        pill.style.transform = `translateX(${left}px)`;
+        pill.style.width = `${width}px`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const activeTab = document.querySelector('.feed-tab.active');
+        if (activeTab) {
+            const pill = document.getElementById('switcherPill');
+            pill.style.transition = 'none';
+            movePill(activeTab);
+            setTimeout(() => {
+                pill.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            }, 50);
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.feed-tab');
+        if (!btn) return;
+
+        document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        movePill(btn);
+
+        const targetId = btn.getAttribute('data-target');
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+            pane.classList.remove('show', 'active');
+        });
+
+        const targetPane = document.getElementById(targetId);
+        if (targetPane) {
+            targetPane.classList.add('show', 'active');
+        }
+    });
+</script>
 {% endblock %}
