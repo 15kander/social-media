@@ -1,2 +1,21 @@
-# Project exclude paths
-/venv/
+# Виртуальное окружение
+venv/
+.venv/
+env/
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# База данных и локальные настройки
+db.sqlite3
+.env
+
+# Среды разработки (PyCharm, VS Code)
+.idea/
+.vscode/
+
+# Медиа и собранная статика
+media/
+staticfiles/
