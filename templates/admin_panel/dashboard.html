@@ -1,10 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'admin_panel/base_admin.html' %}
+{% block content %}
+<h2 class="mb-4">Общая статистика</h2>
+<!-- График активности -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card p-4 shadow">
+            <h5 class="mb-3">📈 Регистрации пользователей (последние 7 дней)</h5>
+            <canvas id="regsChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Подключаем Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('regsChart').getContext('2d');
+    const regsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Новые пользователи',
+                data: {{ chart_data|safe }},
+                borderColor: '#0dcaf0',
+                backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+</script>
+<div class="row text-white">
+    <div class="col-md-3 mb-3">
+        <div class="card p-3 border-primary shadow">
+            <h6 class="text-muted">Пользователи</h6>
+            <h2 class="text-primary fw-bold">{{ total_users }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card p-3 border-success shadow">
+            <h6 class="text-muted">Посты</h6>
+            <h2 class="text-success fw-bold">{{ total_posts }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card p-3 border-warning shadow">
+            <h6 class="text-muted">Комментарии</h6>
+            <h2 class="text-warning fw-bold">{{ total_comments }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card p-3 border-danger shadow">
+            <h6 class="text-muted">Блокировки</h6>
+            <h2 class="text-danger fw-bold">{{ total_blocks }}</h2>
+        </div>
+    </div>
+</div>
+{% endblock %}

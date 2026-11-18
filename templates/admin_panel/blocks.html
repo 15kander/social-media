@@ -1,10 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'admin_panel/base_admin.html' %}
+{% block content %}
+<h2 class="mb-4">Мониторинг блокировок</h2>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-dark rounded shadow-sm">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Кто заблокировал</th>
+                <th>Кого заблокировали</th>
+                <th>Дата блокировки</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for block in blocks %}
+            <tr>
+                <td>{{ block.id }}</td>
+                <td class="fw-bold">@{{ block.blocker.username }}</td>
+                <td class="fw-bold text-danger">@{{ block.blocked.username }}</td>
+                <td>{{ block.created_at|date:"d.m.Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'admin_delete_block' block.id %}" class="btn btn-sm btn-outline-warning" onclick="return confirm('Разблокировать пользователя?')">Разблокировать</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">Активных блокировок нет</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

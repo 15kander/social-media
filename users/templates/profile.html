@@ -151,6 +151,9 @@
                                 <span class="like-icon">{% if user in post.likes.all %}❤️ {% else %}🤍 {% endif %}</span> <span id="likes-count-{{ post.pk }}">{{ post.likes.count }}</span>
                             </button>
                             <span class="text-muted small">💬 {{ post.comments.count }} комментариев</span>
+                            <span class="text-muted small" id="views-count-{{ post.pk }}">
+                                👁 Просмотров: {{ post.views_count }}
+                            </span>
                         </div>
                     </div>
                     <div class="border-top pt-3 mt-2">
@@ -204,10 +207,19 @@ document.addEventListener('click', function(e) {
     })
     .then(response => response.json())
     .then(data => {
+        // Обновляем количество лайков
         const countSpan = document.getElementById(`likes-count-${postId}`);
         if (countSpan) {
             countSpan.textContent = data.likes_count;
         }
+
+        // Обновляем количество просмотров (если оно вернулось с бэкенда)
+        const viewsSpan = document.getElementById(`views-count-${postId}`);
+        if (viewsSpan && data.views_count !== undefined) {
+            viewsSpan.textContent = `👁 Просмотров: ${data.views_count}`;
+        }
+
+        // Меняем иконку сердечка
         const iconSpan = btn.querySelector('.like-icon');
         if (iconSpan) {
             iconSpan.textContent = data.liked ? '❤️' : '🤍';

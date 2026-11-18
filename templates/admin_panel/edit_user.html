@@ -1,10 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'admin_panel/base_admin.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4 shadow">
+            <h3 class="mb-3">Редактировать: @{{ target_user.username }}</h3>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Никнейм (Username)</label>
+                    <input type="text" name="username" class="form-control" value="{{ target_user.username }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" value="{{ target_user.email }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">О себе (Bio)</label>
+                    <textarea name="bio" class="form-control" rows="3">{{ target_user.profile.bio }}</textarea>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="is_staff" class="form-check-input" id="staffCheck" {% if target_user.is_staff %}checked{% endif %}>
+                    <label class="form-check-label" for="staffCheck">Права персонала (Staff)</label>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="is_private" class="form-check-input" id="privateCheck" {% if target_user.profile.is_private %}checked{% endif %}>
+                    <label class="form-check-label" for="privateCheck">Закрытый профиль</label>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Сохранить изменения</button>
+                <a href="{% url 'admin_users' %}" class="btn btn-secondary w-100 mt-2">Назад</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

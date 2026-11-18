@@ -4,12 +4,30 @@
     <div class="col-md-6">
         <div class="card p-4 shadow">
             <h3 class="mb-3">Редактировать пост #{{ post.id }} (@{{ post.author.username }})</h3>
+
+            <!-- Обязательно нужен enctype="multipart/form-data" для передачи файлов -->
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
+
                 <div class="mb-3">
                     <label class="form-label">Текст поста</label>
                     <textarea name="content" class="form-control" rows="5" required>{{ post.content }}</textarea>
                 </div>
+
+                <!-- Показываем текущую картинку, если она есть -->
+                {% if post.image %}
+                <div class="mb-3">
+                    <label class="form-label d-block text-muted">Текущая картинка:</label>
+                    <img src="{{ post.image.url }}" alt="Изображение поста" class="img-thumbnail rounded mb-2" style="max-height: 150px;">
+                </div>
+                {% endif %}
+
+                <!-- Поле для загрузки новой картинки -->
+                <div class="mb-3">
+                    <label class="form-label">Заменить картинку (необязательно)</label>
+                    <input type="file" name="image" class="form-control">
+                </div>
+
                 <button type="submit" class="btn btn-success w-100">Сохранить</button>
                 <a href="{% url 'admin_posts' %}" class="btn btn-secondary w-100 mt-2">Назад</a>
             </form>

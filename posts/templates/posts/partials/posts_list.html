@@ -17,8 +17,10 @@
                             <a href="{% url 'profile' post.author.username %}" class="text-decoration-none fw-bold text-body" style="font-size: 0.95rem;">
                                 @{{ post.author.username }}
                             </a>
-                            <div class="text-muted" style="font-size: 0.75rem; line-height: 1;">
-                                {{ post.created_at|date:"d.m.Y в H:i" }}
+                            <div style="font-size: 0.75rem; line-height: 1;">
+                                <a href="{% url 'post_detail' post.pk %}" class="text-muted text-decoration-none">
+                                    {{ post.created_at|date:"d.m.Y в H:i" }}
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -31,11 +33,15 @@
                     {% endif %}
                 </div>
                 
-                <p class="card-text mt-3 mb-2" style="font-size: 0.95rem;">{{ post.content }}</p>
+                <a href="{% url 'post_detail' post.pk %}" class="text-decoration-none text-body d-block mt-3 mb-2">
+                    <p class="card-text mb-0" style="font-size: 0.95rem;">{{ post.content }}</p>
+                </a>
             </div>
 
             {% if post.image %}
+            <a href="{% url 'post_detail' post.pk %}" class="d-block">
                 <img src="{{ post.image.url }}" class="w-100" style="object-fit: cover; max-height: 450px;" alt="Картинка поста">
+            </a>
             {% endif %}
 
             <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center pt-2 pb-2">
@@ -46,6 +52,9 @@
                         {% if user in post.likes.all %}❤️ {% else %}🤍 {% endif %}
                     </button>
                 {% endif %}
+                    <span class="text-muted small" id="views-count-{{ post.pk }}">
+                        👁 Просмотров: {{ post.views_count }}
+                    </span>
             </div>
 
             <div class="card-footer bg-transparent border-top">
@@ -109,13 +118,19 @@ document.addEventListener('click', function(e) {
     })
     .then(response => response.json())
     .then(data => {
-        // Обновляем текст счетчика лайков
+        // Обновляем счетчик лайков
         const countSpan = document.getElementById(`likes-count-${postId}`);
         if (countSpan) {
             countSpan.textContent = `❤️ ${data.likes_count} лайков`;
         }
 
-        // Меняем стиль и текст самой кнопки
+        // Обновляем счетчик просмотров (если просмотр засчитался)
+        const viewsSpan = document.getElementById(`views-count-${postId}`);
+        if (viewsSpan && data.views_count !== undefined) {
+            viewsSpan.textContent = `👁 Просмотров: ${data.views_count}`;
+        }
+
+        // Меняем иконку кнопки лайка
         if (data.liked) {
             btn.innerHTML = '❤️';
         } else {
@@ -123,4 +138,5 @@ document.addEventListener('click', function(e) {
         }
     });
 });
+</script>
 </script>

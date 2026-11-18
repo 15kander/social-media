@@ -15,6 +15,19 @@ from .views import (
     accept_follow,
     reject_follow,
 )
+from .admin_views import (
+    admin_dashboard,
+    admin_users_list,
+    admin_edit_user,
+    admin_delete_user,
+    admin_posts_list,
+    admin_edit_post,
+    admin_delete_post,
+    admin_comments_list,
+    admin_delete_comment,
+    admin_blocks_list,
+    admin_delete_block,
+)
 
 urlpatterns = [
     path('register/', register_view, name='register'),
@@ -31,4 +44,15 @@ urlpatterns = [
     path('profile/<str:username>/following/', following_view, name='following_list'),
     path('profile/<str:username>/follow', toggle_follow, name='toggle_follow'),
     path('profile/<str:username>/block/', toggle_block, name='toggle_block'),
+    path('custom-admin/', admin_dashboard, name='admin_dashboard'),
+    path('custom-admin/users/', admin_users_list, name='admin_users'),
+    path('custom-admin/users/<int:user_id>/edit/', admin_edit_user, name='admin_edit_user'),
+    path('custom-admin/users/<int:user_id>/delete/', admin_delete_user, name='admin_delete_user'),
+    path('custom-admin/posts/', admin_posts_list, name='admin_posts'),
+    path('custom-admin/posts/<int:post_id>/edit/', admin_edit_post, name='admin_edit_post'),
+    path('custom-admin/posts/<int:post_id>/delete/', admin_delete_post, name='admin_delete_post'),
+    path('custom-admin/comments/', admin_comments_list, name='admin_comments'),
+    path('custom-admin/comments/<int:comment_id>/delete/', admin_delete_comment, name='admin_delete_comment'),
+    path('custom-admin/blocks/', admin_blocks_list, name='admin_blocks'),
+    path('custom-admin/blocks/<int:block_id>/delete/', admin_delete_block, name='admin_delete_block'),
 ]

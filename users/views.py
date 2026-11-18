@@ -58,8 +58,8 @@ def profile_view(request, username):
                     follow_request_sent=True
     posts = profile_user.post_set.all().order_by('-created_at') if can_view_posts else []
     is_blocked = Block.objects.filter(blocker=request.user, blocked=profile_user).exists() if request.user.is_authenticated else False
-    followers_count = profile_user.followers_set.count()
-    following_count = profile_user.following_set.count()
+    followers_count = profile_user.followers_set.filter(is_approved=True).count()
+    following_count = profile_user.following_set.filter(is_approved=True).count()
 
     context = {
         'profile_user': profile_user,
@@ -126,22 +126,31 @@ def edit_profile(request):
     return render(request, 'edit_profile.html', context)
 
 
+from datetime import datetime, time
+from django.utils import timezone
+
+
 def search_users(request):
     query = request.GET.get('q', '').strip()
-    users = []
-    posts = []
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    tab = request.GET.get('tab', 'users')
 
-    if query and request.user.is_authenticated:
-        # Превращаем заблокированных в обычный список ID
+    users = User.objects.none()
+    posts = Post.objects.none()
+
+    # Ищем только если пользователь что-то ввел в строку поиска или выбрал даты!
+    if request.user.is_authenticated and (query or date_from or date_to):
         excluded_users = list(get_blocked_users_ids(request.user))
         excluded_users.append(request.user.id)
 
-        # 1. Поиск пользователей
-        users = User.objects.filter(
-            Q(username__icontains=query) | Q(email__icontains=query)
-        ).exclude(id__in=excluded_users).distinct()
+        # 1. Поиск пользователей (если введён текст)
+        if query:
+            users = User.objects.filter(
+                Q(username__icontains=query) | Q(email__icontains=query)
+            ).exclude(id__in=excluded_users).distinct()
 
-        # 2. Получаем ID одобренных подписок в виде чистого списка чисел через list()
+        # Получаем ID одобренных подписок
         approved_following_ids = list(
             Follow.objects.filter(
                 follower=request.user,
@@ -149,21 +158,52 @@ def search_users(request):
             ).values_list('following_id', flat=True)
         )
 
-        # 3. Поиск постов с учетом приватности и черного списка
+        # 2. Базовый queryset для постов
         posts = Post.objects.filter(
-            content__icontains=query
-        ).filter(
             Q(author__profile__is_private=False) |
             Q(author=request.user) |
             Q(author_id__in=approved_following_ids)
         ).exclude(
             author_id__in=excluded_users
-        ).distinct().order_by('-created_at')
+        )
+
+        # Если введён поисковый запрос — фильтруем по тексту или автору
+        if query:
+            clean_query = query[1:] if query.startswith('@') else query
+            posts = posts.filter(
+                Q(content__icontains=clean_query) |
+                Q(author__username__icontains=clean_query)
+            )
+
+        # 3. Фильтрация по дате "С"
+        if date_from:
+            try:
+                dt_from = datetime.strptime(date_from, '%Y-%m-%d')
+                if timezone.is_aware(timezone.now()):
+                    dt_from = timezone.make_aware(dt_from)
+                posts = posts.filter(created_at__gte=dt_from)
+            except ValueError:
+                pass
+
+        # 4. Фильтрация по дате "По"
+        if date_to:
+            try:
+                dt_to = datetime.combine(datetime.strptime(date_to, '%Y-%m-%d').date(), time.max)
+                if timezone.is_aware(timezone.now()):
+                    dt_to = timezone.make_aware(dt_to)
+                posts = posts.filter(created_at__lte=dt_to)
+            except ValueError:
+                pass
+
+        posts = posts.distinct().order_by('-created_at')
 
     return render(request, 'search.html', {
         'users': users,
         'posts': posts,
-        'query': query
+        'query': query,
+        'date_from': date_from,
+        'date_to': date_to,
+        'tab': tab,
     })
 
 
@@ -196,16 +236,22 @@ def toggle_follow(request, username):
 
     return redirect('profile', username=username)
 
+
 @login_required
 def followers_view(request, username):
     profile_user = get_object_or_404(User, username=username)
     if Block.objects.filter(blocker=profile_user, blocked=request.user).exists():
         raise Http404("Пользователь не найден")
-    profile,_=Profile.objects.get_or_create(user=profile_user)
-    is_approved_follower = Follow.objects.filter(follower=request.user, following=profile_user,is_approved=True).exists()
+
+    profile, _ = Profile.objects.get_or_create(user=profile_user)
+    is_approved_follower = Follow.objects.filter(follower=request.user, following=profile_user,
+                                                 is_approved=True).exists()
     can_view = not profile.is_private or request.user == profile_user or is_approved_follower
+
     if not can_view:
-        return redirect('profile',username=username)
+        return redirect('profile', username=username)
+
+    # ИСПРАВЛЕНИЕ: добавляем .filter(is_approved=True)
     followers = [f.follower for f in profile_user.followers_set.filter(is_approved=True)]
 
     context = {
@@ -215,17 +261,22 @@ def followers_view(request, username):
     }
     return render(request, 'user_list.html', context)
 
+
 @login_required
 def following_view(request, username):
     profile_user = get_object_or_404(User, username=username)
     if Block.objects.filter(blocker=profile_user, blocked=request.user).exists():
         raise Http404("Пользователь не найден")
-    profile, _ = Profile.objects.get_or_create(user=profile_user)
 
-    is_approved_follower = Follow.objects.filter(follower=request.user, following=profile_user,is_approved=True).exists()
+    profile, _ = Profile.objects.get_or_create(user=profile_user)
+    is_approved_follower = Follow.objects.filter(follower=request.user, following=profile_user,
+                                                 is_approved=True).exists()
     can_view = not profile.is_private or request.user == profile_user or is_approved_follower
+
     if not can_view:
-        return redirect('profile',username=username)
+        return redirect('profile', username=username)
+
+    # ИСПРАВЛЕНИЕ: добавляем .filter(is_approved=True)
     following = [f.following for f in profile_user.following_set.filter(is_approved=True)]
 
     context = {

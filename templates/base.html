@@ -45,8 +45,8 @@
                     </a>
 
                     {% if user.is_superuser %}
-                        <a href="{% url 'admin:index' %}" class="nav-pill" style="border-color: rgba(234, 179, 8, 0.4); color: #facc15;">
-                            ⚙️ Админка
+                        <a href="{% url 'admin_dashboard' %}" class="nav-pill" style="border-color: rgba(234, 179, 8, 0.4); color: #facc15;">
+                                ⚙️ Админка
                         </a>
                     {% endif %}
                     <form action="{% url 'logout' %}" method="post" class="d-inline m-0">

@@ -66,8 +66,38 @@
                 </div>
             </div>
 
-            <!-- Вкладка: Посты -->
+
             <div class="tab-pane fade" id="posts-pane" role="tabpanel">
+
+                <!-- Панель фильтрации по датам -->
+                <div class="card shadow-sm mb-4 border-0 p-3" style="border-radius: 16px;">
+                    <form method="get" action="{% url 'search' %}" class="row g-2 align-items-center justify-content-center">
+                        <input type="hidden" name="q" value="{{ query }}">
+                        <input type="hidden" name="tab" value="posts">
+
+                        <div class="col-auto">
+                            <span class="text-muted small">С:</span>
+                        </div>
+                        <div class="col-md-4">
+                            <!-- Важно: value="{{ date_from }}" подставляет дату в формате YYYY-MM-DD -->
+                            <input type="date" name="date_from" value="{{ date_from }}" class="form-control form-control-sm rounded-pill px-3 text-light bg-transparent">
+                        </div>
+
+                        <div class="col-auto">
+                            <span class="text-muted small">По:</span>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="date" name="date_to" value="{{ date_to }}" class="form-control form-control-sm rounded-pill px-3 text-light bg-transparent">
+                        </div>
+
+                        <div class="col-auto d-flex gap-1">
+                            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3">OK</button>
+                            {% if date_from or date_to or query %}
+                                <a href="{% url 'search' %}?tab=posts" class="btn btn-outline-secondary btn-sm rounded-pill px-2" title="Сбросить фильтры">❌</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
                 {% for post in posts %}
                     <div class="card shadow-sm mb-4 border-0 p-3" style="border-radius: 16px;">
                         <div class="d-flex align-items-center mb-3">
@@ -115,6 +145,27 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+        // Проверяем параметры URL: если есть запрос на посты, даты или tab=posts, сразу переключаем на посты
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        const dateFromParam = urlParams.get('date_from');
+        const dateToParam = urlParams.get('date_to');
+
+        if (tabParam === 'posts' || dateFromParam || dateToParam) {
+            const postsBtn = document.querySelector('[data-target="posts-pane"]');
+            const usersBtn = document.querySelector('[data-target="users-pane"]');
+            const postsPane = document.getElementById('posts-pane');
+            const usersPane = document.getElementById('users-pane');
+
+            if (postsBtn && postsPane) {
+                if (usersBtn) usersBtn.classList.remove('active');
+                if (usersPane) usersPane.classList.remove('show', 'active');
+
+                postsBtn.classList.add('active');
+                postsPane.classList.add('show', 'active');
+            }
+        }
+
         const activeTab = document.querySelector('.feed-tab.active');
         if (activeTab) {
             const pill = document.getElementById('switcherPill');

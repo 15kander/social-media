@@ -1,8 +1,13 @@
 from django.urls import path
-from .views import feed_view,edit_post_view, like_post, create_post_view,add_comment, edit_comment_view,delete_comment, delete_post
+from .views import (
+    feed_view, edit_post_view, like_post, create_post_view,
+    add_comment, edit_comment_view, delete_comment, delete_post,
+    post_detail_view  # Импортируем вьюху детального просмотра
+)
 
 urlpatterns = [
     path('', feed_view, name='feed'),
+    path('post/<int:post_id>/', post_detail_view, name='post_detail'),  # Маршрут для отдельной страницы поста
     path('post/<int:pk>/like/', like_post, name='like_post'),
     path('post/<int:pk>/delete/', delete_post, name='delete_post'),
     path('post/<int:pk>/comment/', add_comment, name='add_comment'),
